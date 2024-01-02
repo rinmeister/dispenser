@@ -1,0 +1,4 @@
+== dispenser
+automatische kippenvoer dispenser
+Code file toegevoegd
+Deze setup  werkt met een servomotor die aangestuurd wordt door een relais.
