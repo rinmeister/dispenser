@@ -21,8 +21,8 @@ void setup() {
 }
 
 void initWiFi() {
-  const char* ssid = "RinWireless";
-  const char* passphrase = "DonderOpMa89n!";
+  const char* ssid = "****";
+  const char* passphrase = "****";
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passphrase);
   Serial.print("Connecting to WiFi ..");
