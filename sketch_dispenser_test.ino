@@ -1,6 +1,9 @@
 #include <WiFi.h>
 #include <time.h>
 #include <SolarCalculator.h>
+#include <ESP32Servo.h>
+
+Servo myservo; //Creeer servo object om naartoe te schrijven.
 
 // Declareer globale variabelen
 const char* ntpServer = "pool.ntp.org";
@@ -9,8 +12,10 @@ const int daylightOffset_sec = 3600;
 double latitude = 51.7515, longitude = 5.8836; //Mook
 int utc_offset = 1, utc_offset_minutes = 60;
 int sunrise_minutes, sunset_minutes;
-int test_minutes = 996;
+int test_minutes = 999;
 double transit, sunrise, sunset; // nodig voor sunrise en sunset calc
+int pos = 0;
+int servoPin = 32;
 
 void setup() {
   // put your setup code here, to run once:
@@ -18,11 +23,21 @@ void setup() {
   pinMode(2, OUTPUT); //Test pin
   pinMode(32, OUTPUT); //De dispenser motor is verbonden op pin32.
   initWiFi(); //Verbind met de WIFI
+  // Allow allocation of all timers
+	ESP32PWM::allocateTimer(0);
+	ESP32PWM::allocateTimer(1);
+	ESP32PWM::allocateTimer(2); 
+	ESP32PWM::allocateTimer(3);
+	myservo.setPeriodHertz(50);    // standard 50 hz servo
+	myservo.attach(servoPin, 1000, 3000); // attaches the servo on pin 18 to the servo object
+	// using default min/max of 1000us and 2000us
+	// different servos may require different min/max settings
+	// for an accurate 0 to 180 sweep
 }
 
 void initWiFi() {
-  const char* ssid = "****";
-  const char* passphrase = "****";
+  const char* ssid = "RinWireless";
+  const char* passphrase = "DonderOpMa89n!";
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passphrase);
   Serial.print("Connecting to WiFi ..");
@@ -55,17 +70,12 @@ void calcSunriseSunsetMinutes(double sunrise, double sunset, int* sunrise_minute
 
 void dispenser(int sunrise_minutes, int sunset_minutes, int time_minutes) {
   if ((sunrise_minutes == time_minutes) || sunset_minutes == time_minutes ) {
-    digitalWrite(32, HIGH); // Open de dispenser
+    myservo.write(180); //open de dispenser.
     Serial.println("opening dispenser");
     Serial.println("dispensing");
-    delay(410); // Pas aan zodat de dispenser een halve cirkel heeft gedraaid.
-    digitalWrite(32, LOW);
     delay(2000); //aanpassen naar hoeveelheid voer
-    digitalWrite(32, HIGH); // Sluit de dispenser
+    myservo.write(0); // Sluit de dispenser
     Serial.println("closing dispenser");
-    delay(410); // Pas aan zodat de dispenser een halve cirkel heeft gedraaid.
-    digitalWrite(32, LOW);
-    delay(2000);
     delay(300000); // Ga 5 minuten uit, zodat de dispenser nooit twee keer in dezelfde minuut aan kan gaan.
   }
   Serial.println("niks gedaan");
